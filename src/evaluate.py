@@ -60,3 +60,27 @@ def evaluate_autoencoder(model_path='models/autoencoder.h5', plot=True):
     df['reconstruction_error'] = reconstruction_error
     df['predicted_anomaly'] = y_pred
     return df, threshold
+
+
+def compute_reconstruction_error(model, X_val, percentile=95):
+    """
+    Compute reconstruction error for validation data and return a threshold.
+
+    Args:
+        model: Trained autoencoder (tf.keras.Model)
+        X_val: Validation data (numpy array)
+        percentile: Percentile for threshold (defualt 95%)
+
+    Returns:
+        threshold: Error above which a sample is considered anomalous
+    """
+
+    # Reconstruct Validation Data
+    X_val_pred = model.predict(X_val)
+
+    # Compoute MSE per sample
+    reconstruction_error = np.mean(np.squaree(X_val - X_val_pred), axis=1)
+
+    # Threshold (e.g., top 5% as anomalies)
+    threshold = np.percentile(reconstruction_error, percentile)
+    return threshold
